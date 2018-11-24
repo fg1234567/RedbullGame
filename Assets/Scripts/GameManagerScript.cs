@@ -1,84 +1,61 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManagerScript : MonoBehaviour
 {
 
     public GameObject defaultRedbullCan, flyingRedbulCan;
     public GameObject ref1, bar;
-    //public Animator triggered;
-    Vector3 tempPosition;
-    Vector3 t = new Vector3(0, 0, 0);
+    float velocity = 1.50f, v = 0.50f;
+    List<FallingObject> mFallingObjectList = new List<FallingObject>();
+    FallingObject mFallingObject;
+    int listOrder = -1;
+    public Slider scoreBar;
 
-    bool eventler = false;
-    List<FallingObjectClass> mylist = new List<FallingObjectClass>();
-    FallingObjectClass mynewobject;
 
-    void dooo()
-    {
-        mynewobject = new FallingObjectClass(ref1, bar, defaultRedbullCan, flyingRedbulCan, 1.00f, t);
-        mylist.Add(mynewobject);
+    void CreateObject(){
+        listOrder += 1;
+        velocity += v;
+        v -= 0.01f;
+
+        mFallingObject = new FallingObject(ref1, bar, defaultRedbullCan, flyingRedbulCan, velocity, listOrder);
+        mFallingObjectList.Add(mFallingObject);
     }
 
-    void Start()
-    {
-        InvokeRepeating("dooo", 1.00f, 22.00f);
-        /*Instantiate(defaultRedbullCan, ref1.transform.position, Quaternion.identity, ref1.transform);
-        tempPosition = ref1.transform.position;  */
+    void Start(){
+        InvokeRepeating("CreateObject", 2.00f, 5.00f);
     }
 
-    /*void DoThings(RaycastHit hit)
-    {
+    void Update(){
 
-        eventler = true;
-        Destroy(hit.transform.gameObject);
-        Instantiate(flyingRedbulCan, ref1.transform.position, Quaternion.identity, ref1.transform);
-        //ref1.GetComponent<Animator>().SetBool("end", true);        
-    }*/
+        if (Input.GetMouseButtonDown(0)){
 
-    void Update()
-    {
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        foreach (FallingObjectClass foc in mylist)
-        {
-            foc.loop();
+            if (Physics.Raycast(ray, out hit, 100.0f)){
+                if (hit.transform != null){
+                    if (hit.transform.gameObject.tag == "RedbullCan_Default"){
+                       for (int i = 0; i<mFallingObjectList.Count; i++){
+                            if(hit.transform.gameObject.name == "RedbullCan_Default" + i){
+                                mFallingObjectList[i].changeModel(hit);
+
+                            }                       
+                        } 
+                    }
+                }
+            }
         }
 
-        /* if (!eventler)
-         {
-             tempPosition.y += (-1)*Time.deltaTime;
-             ref1.transform.position = tempPosition;
-         }
-         else
-         {
-             var diffofx = bar.transform.position.x - tempPosition.x;
-             var diffofy = bar.transform.position.y - tempPosition.y;
+        for (int i = 0; i<mFallingObjectList.Count; i++){
+            mFallingObjectList[i].move();
+            if(mFallingObjectList[i].hasReached && !mFallingObjectList[i].hasScoreUpdated){
+                scoreBar.value += 1;
+                mFallingObjectList[i].hasScoreUpdated = true;
 
-             var distance = Mathf.Sqrt(diffofx*diffofx + diffofy*diffofy);
-
-             tempPosition.x += diffofx*Time.deltaTime / distance;
-             tempPosition.y += diffofy*Time.deltaTime / distance;
-             ref1.transform.position = tempPosition;
-         }
-
-
-         if (Input.GetMouseButtonDown(0))
-         {
-
-             RaycastHit hit;
-             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-             //Checks whether the mouse click hits a mesh collider
-             if (Physics.Raycast(ray, out hit, 100.0f))
-             {
-                 if (hit.transform != null)
-                 {
-                     DoThings(hit);
-                 }
-             }
-         }*/
-
-
+            }
+        }
     }
 }
