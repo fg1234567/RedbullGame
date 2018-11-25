@@ -2,30 +2,32 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManagerScript : MonoBehaviour
 {
 
-    public GameObject defaultRedbullCan, flyingRedbulCan;
-    public GameObject ref1, bar;
-    float velocity = 1.50f, v = 0.50f;
+    public GameObject defaultRedbullCan, flyingRedbulCan, ref1, bar;
+    public Slider scoreBar;
+    int listOrder = -1;
+    float velocity = 1.50f, timeCount = 20;
     List<FallingObject> mFallingObjectList = new List<FallingObject>();
     FallingObject mFallingObject;
-    int listOrder = -1;
-    public Slider scoreBar;
-
+    public Text timerText;
 
     void CreateObject(){
-        listOrder += 1;
-        velocity += v;
-        v -= 0.01f;
-
-        mFallingObject = new FallingObject(ref1, bar, defaultRedbullCan, flyingRedbulCan, velocity, listOrder);
-        mFallingObjectList.Add(mFallingObject);
+        if(0.00f <= timeCount)
+        {
+            listOrder += 1;
+            mFallingObject = new FallingObject(ref1, bar, defaultRedbullCan, flyingRedbulCan, velocity, listOrder);
+            mFallingObjectList.Add(mFallingObject);
+        }
     }
 
     void Start(){
-        InvokeRepeating("CreateObject", 2.00f, 5.00f);
+
+        InvokeRepeating("CreateObject", 2.00f, 3.50f);
+        timerText.text = "20";
     }
 
     void Update(){
@@ -35,14 +37,13 @@ public class GameManagerScript : MonoBehaviour
             RaycastHit hit;
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-            if (Physics.Raycast(ray, out hit, 100.0f)){
+            if (Physics.Raycast(ray, out hit, 100.00f)){
                 if (hit.transform != null){
                     if (hit.transform.gameObject.tag == "RedbullCan_Default"){
                        for (int i = 0; i<mFallingObjectList.Count; i++){
                             if(hit.transform.gameObject.name == "RedbullCan_Default" + i){
-                                mFallingObjectList[i].changeModel(hit);
-
-                            }                       
+                                mFallingObjectList[i].changeModel(hit);                                
+                            }
                         } 
                     }
                 }
@@ -51,11 +52,30 @@ public class GameManagerScript : MonoBehaviour
 
         for (int i = 0; i<mFallingObjectList.Count; i++){
             mFallingObjectList[i].move();
-            if(mFallingObjectList[i].hasReached && !mFallingObjectList[i].hasScoreUpdated){
-                scoreBar.value += 1;
-                mFallingObjectList[i].hasScoreUpdated = true;
 
+            if (!mFallingObjectList[i].hasUpdatedScore && mFallingObjectList[i].hasReached){
+                mFallingObjectList[i].hasUpdatedScore = true;
+                if (scoreBar.value <= 50){
+                    scoreBar.value += 1;
+                    var tempPos = bar.transform.position;
+                    tempPos.x += 0.20f;
+                    tempPos.y += 0.02f;
+                    bar.transform.position = tempPos;
+                }
             }
         }
+
+        if(scoreBar.value == 50) { timeCount = 0.00f; }
+        if( 0.00f > timeCount) { TimeHasEnded(); }
+        timeCount -= Time.deltaTime;
+        if ((int)timeCount >= 0) { timerText.text = ((int)timeCount).ToString(); }
+        else { timerText.text = "0"; }    
+    }
+
+    void TimeHasEnded(){
+        Invoke("ChangeScene", 4.00f);
+    }
+    void ChangeScene(){
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 }

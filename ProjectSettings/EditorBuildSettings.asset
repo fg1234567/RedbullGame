@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Falling_Redbulls.unity
     guid: 57c63db3e80a71449a5da2c7eca1fa85
+  - enabled: 1
+    path: Assets/Scenes/workscene.unity
+    guid: 3c93179d075fcd54cb0490755d407523
   m_configObjects: {}

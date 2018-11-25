@@ -9,7 +9,7 @@ public class FallingObject{//6 variables
     GameObject go;//local game object to assign position
     Vector3 tempPosition;// used to get position of key locations 
     bool isHit = false;
-    public bool hasReached = false, hasScoreUpdated = false;
+    public bool hasReached = false, hasUpdatedScore = false;
     int id;//list order
     float fallingVelocity;
 
@@ -24,8 +24,7 @@ public class FallingObject{//6 variables
         instantiate();
     }
 
-    void instantiate()
-    {
+    void instantiate(){
         go = GameObject.Instantiate(RedbullCan_def, startReference.transform.position, Quaternion.identity);
         tempPosition = startReference.transform.position;
         go.name = "RedbullCan_Default" + id;
@@ -33,18 +32,15 @@ public class FallingObject{//6 variables
 
     public void move()
     {
-        if (!isHit && !hasReached)
-        {
+        if (!isHit && !hasReached){
             tempPosition.y += fallingVelocity*(-1) * Time.deltaTime;
             go.transform.position = tempPosition;
 
-            if (go.transform.position.y < -6.00f)
-            {
-                objectLeftScreen();
+            if (go.transform.position.y < -6.00f){
+                objectReachedTarget();
             }
         }
-        else if(!hasReached)
-        {
+        else if(!hasReached){
             var diffofx = targetReference.transform.position.x - tempPosition.x;
             var diffofy = targetReference.transform.position.y - tempPosition.y;
 
@@ -54,14 +50,13 @@ public class FallingObject{//6 variables
             tempPosition.y += diffofy*fallingVelocity*Time.deltaTime / distance;
             go.transform.position = tempPosition;
 
-            if (diffofx < 0.05f && diffofy < 0.05f){
+            if (diffofx < 0.01f && diffofy < 0.01f){
                 objectReachedTarget();
             }
         }
     }
 
-    public void changeModel(RaycastHit touchedObject)
-    {
+    public void changeModel(RaycastHit touchedObject){
         isHit = true;
         GameObject.Destroy(touchedObject.transform.gameObject);
         go = GameObject.Instantiate(RedbullCan_anim, touchedObject.transform.position, Quaternion.identity);
@@ -69,13 +64,6 @@ public class FallingObject{//6 variables
 
     void objectReachedTarget(){
         hasReached = true;
-        GameObject.Destroy(go);
-    }
-
-    void objectLeftScreen()
-    {
-        hasReached = true;
-
         GameObject.Destroy(go);
     }
 }
