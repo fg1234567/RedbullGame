@@ -7,20 +7,31 @@ using UnityEngine.SceneManagement;
 public class GameManagerScript : MonoBehaviour
 {
 
-    public GameObject defaultRedbullCan, flyingRedbulCan, ref1, bar;
+    public GameObject defaultRedbullCan1, flyingRedbulCan1, defaultRedbullCan2, flyingRedbulCan2, ref1, bar;
     public Slider scoreBar;
     int listOrder = -1;
-    float velocity = 1.50f, timeCount = 20;
+    float velocity1 = 1.50f, velocity2 = 3.00f, timeCount = 50;
+    int score1 = 10, score2 = 20;
     List<FallingObject> mFallingObjectList = new List<FallingObject>();
     FallingObject mFallingObject;
     public Text timerText;
+    public GameObject displayedScoreGameObject;//Will have animation as prefab
+    bool check = true;
 
     void CreateObject(){
-        if(0.00f <= timeCount)
-        {
-            listOrder += 1;
-            mFallingObject = new FallingObject(ref1, bar, defaultRedbullCan, flyingRedbulCan, velocity, listOrder);
-            mFallingObjectList.Add(mFallingObject);
+        if(0.00f <= timeCount){
+            if (check){
+                listOrder += 1;
+                mFallingObject = new FallingObject(ref1, bar, defaultRedbullCan1, flyingRedbulCan1, velocity1, score1, displayedScoreGameObject, listOrder);
+                mFallingObjectList.Add(mFallingObject);
+                check = !check;
+            }
+            else{
+                listOrder += 1;
+                mFallingObject = new FallingObject(ref1, bar, defaultRedbullCan2, flyingRedbulCan2, velocity2, score2, displayedScoreGameObject, listOrder);
+                mFallingObjectList.Add(mFallingObject);
+                check = !check;
+            }
         }
     }
 
@@ -42,7 +53,10 @@ public class GameManagerScript : MonoBehaviour
                     if (hit.transform.gameObject.tag == "RedbullCan_Default"){
                        for (int i = 0; i<mFallingObjectList.Count; i++){
                             if(hit.transform.gameObject.name == "RedbullCan_Default" + i){
-                                mFallingObjectList[i].changeModel(hit);                                
+                                mFallingObjectList[i].ChangeModel(hit);                                
+                                mFallingObjectList[i].DisplayScore(hit);
+                                Vector3 v = new Vector3(0.00f, 0.00f, 0.00f);
+                                //GameObject go = Instantiate(displayedScore.gameObject, hit.transform.position + v , Quaternion.identity);
                             }
                         } 
                     }
@@ -56,11 +70,8 @@ public class GameManagerScript : MonoBehaviour
             if (!mFallingObjectList[i].hasUpdatedScore && mFallingObjectList[i].hasReached){
                 mFallingObjectList[i].hasUpdatedScore = true;
                 if (scoreBar.value <= 50){
-                    scoreBar.value += 1;
-                    var tempPos = bar.transform.position;
-                    tempPos.x += 0.20f;
-                    tempPos.y += 0.02f;
-                    bar.transform.position = tempPos;
+                    if(mFallingObjectList[i].fallingVelocity == velocity1) { scoreBar.value += 1; }
+                    if(mFallingObjectList[i].fallingVelocity == velocity2) { scoreBar.value += 2; }                    
                 }
             }
         }
@@ -73,7 +84,7 @@ public class GameManagerScript : MonoBehaviour
     }
 
     void TimeHasEnded(){
-        Invoke("ChangeScene", 4.00f);
+        //Invoke("ChangeScene", 4.00f);
     }
     void ChangeScene(){
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
